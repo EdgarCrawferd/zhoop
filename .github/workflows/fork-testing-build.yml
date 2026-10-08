@@ -4,7 +4,12 @@
 # their artifact to that SAME tag — so every release has NOOP-android + NOOP-android-debug (Android)
 # + NOOP-macos.zip + NOOP-ios-unsigned.ipa together, each stamped with the base app version.
 # Replaces the older split fork-testing-apk.yml + fork-testing-apple.yml.
-# Unsigned/debug-keyed, no secrets. Trigger from the Actions tab. (Built from noop-staging via --ref.)
+# Unsigned/debug-keyed, no secrets. Trigger from the Actions tab.
+#
+# Fork-local: upstream dispatches this against its disposable `noop-staging` branch, which the
+# `cleanup` job at the bottom then deletes. This fork builds from `zhoop`, its default branch, so
+# that cleanup is inert here (it is guarded to the `noop-staging` name) and the branch survives a
+# run, as it should. Dispatch with --ref zhoop.
 name: Testing build (fork)
 
 on:
