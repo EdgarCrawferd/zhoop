@@ -9,6 +9,15 @@ name: Testing build (fork)
 
 on:
   workflow_dispatch:
+    inputs:
+      platforms:
+        # Zhoop is an iPhone fork, and this repository is private, where GitHub bills a macOS minute
+        # at ten times a Linux one. Building the macOS app as well doubles the expensive half of a run
+        # for a target nobody here installs, so the default is iOS alone.
+        description: "Which platforms to build"
+        type: choice
+        options: [ios, apple, all]
+        default: ios
 
 permissions:
   contents: write
@@ -108,6 +117,7 @@ jobs:
 
   android:
     needs: meta
+    if: ${{ inputs.platforms == 'all' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -141,10 +151,15 @@ jobs:
 
   macos:
     needs: meta
+    if: ${{ inputs.platforms == 'apple' || inputs.platforms == 'all' }}
     runs-on: macos-15
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+      - name: Pin the fork's bundle id prefix
+        # Config/BundleIdSecrets.xcconfig is gitignored, so CI has to write it or the build falls back
+        # to the stock com.noopapp identifiers and overwrites an installed copy of upstream NOOP.
+        run: echo 'BUNDLE_ID_PREFIX = io.github.edgarcrawferd' > Config/BundleIdSecrets.xcconfig
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
@@ -193,6 +208,11 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+      - name: Pin the fork's bundle id prefix
+        # Same as the macOS leg: gitignored locally, so CI writes it. This is what lets the sideloaded
+        # build sit beside an AltStore/SideStore install of upstream NOOP instead of replacing it, and
+        # it moves the App Group with it (group.$(BUNDLE_ID_PREFIX).noop.staging).
+        run: echo 'BUNDLE_ID_PREFIX = io.github.edgarcrawferd' > Config/BundleIdSecrets.xcconfig
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
