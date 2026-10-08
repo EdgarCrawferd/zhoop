@@ -85,6 +85,25 @@ an upstream NOOP install instead of colliding with it. A CI build does not see t
 back to `com.noopapp`; to use your own prefix in CI, write the file in the workflow before
 `xcodegen generate`.
 
+## CI cost traps on a private fork
+
+GitHub bills a macOS minute at ten times a Linux one, and this repository is private, so two of
+upstream's triggers are worth knowing before you push:
+
+- **`swift-packages.yml` runs on push to `main`, on `macos-15`**, path-filtered to `Packages/**`
+  among others. The Zhoop commit touches `Packages/StrandDesign/`, so a push to `main` starts a
+  macOS run every time. The default branch here is `zhoop` instead, and every push trigger in the
+  repository is pinned to `branches: [main]`, so pushing to `zhoop` fires nothing. Keep it that way,
+  or accept the macOS run on each push.
+- **`app-build.yml` has no push trigger at all** — `pull_request` and `workflow_dispatch` only — so
+  it will not fire behind your back. It is also the only check that compiles the app targets, which
+  means a push proves nothing about whether iOS still builds. Dispatch it, or read the testing
+  build's own result.
+- `parity-governance.yml` runs daily and `prune-stale-branches.yml` weekly, both on Linux. They are
+  upstream maintainer tooling with nothing to do here and can be disabled in the Actions tab;
+  prune-stale-branches only ever deletes branches whose PR merged or closed, so with no PRs it is
+  inert either way.
+
 ## Privacy switches worth setting
 
 Upstream is offline by default, with these exceptions:
