@@ -19,10 +19,10 @@
 name: Prune stale branches
 
 on:
-  schedule:
-    # Mondays, 04:17 UTC. Off the hour because everything else on GitHub runs on the hour and
-    # scheduled jobs are queued, not guaranteed, when the minute is busy.
-    - cron: '17 4 * * 1'
+  # Fork-local: upstream runs this Mondays at 04:17 UTC. A personal fork has no PR flow for it to
+  # tidy up after, so a weekly job whose purpose is DELETING refs is left disarmed rather than
+  # pointed at a private repository nobody is cleaning up. Still runnable by hand, and its manual
+  # default is a dry run.
   workflow_dispatch:
     inputs:
       dry_run:

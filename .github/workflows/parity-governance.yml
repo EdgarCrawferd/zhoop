@@ -44,10 +44,11 @@ on:
       - 'Tools/parity_case_specs/**'
       - 'Tools/tests/test_parity_*.py'
       - '.github/workflows/parity-governance.yml'
-  # Daily, so authority staleness is found on a schedule instead of by whoever
-  # next edits Tools/. See the header note.
-  schedule:
-    - cron: '17 4 * * *'
+  # Fork-local: upstream runs this daily to catch authority staleness between contributors. This
+  # fork takes upstream's Tools/ unmodified and has no contributors, so the daily run would only
+  # ever re-confirm upstream's own state while consuming this private repository's minutes. The
+  # pull_request and push triggers above still fire if Tools/ is ever edited here, which is the
+  # case the suite exists for.
   workflow_dispatch:
 
 concurrency:
